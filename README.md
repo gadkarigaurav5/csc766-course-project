@@ -25,7 +25,7 @@ Overview:
 
     profiler_utils.py : I have used the file provided to generate logs
 
-    perf_measure.py : This runs the pipeline 5 times
+    perf_measure.py : This runs the pipeline 5 times and does analysis.
 
 
 Workflow:
@@ -48,7 +48,8 @@ Efficient Optimized pipeline:
 To Run:
     
     Open 3 terminals and paste the below command in each.
-    cd to services folder in all the 3 terminals.
+    cd to services folder in all the 3 terminals. 
+    Copy one command in every terminal.
 
     uvicorn parse_service:app --port 8000
     uvicorn lint_service:app --port 8001
@@ -57,8 +58,6 @@ To Run:
    
     Open a new terminal
     cd client
-
-    sample.py is a simple test case which is a Python file to be parsed
 
     *********run basic client***********
     python basic.py --source ../tests/sample.py
@@ -71,7 +70,7 @@ To Run:
     basic logs : basic_logs
     optimized logs: optimized_logs
 
-    If you want to run the pipelines and collect data over multiple runs, run perf_measure.py 
+    If you want to run the pipelines and collect data over multiple runs, run perf_measure.py from the program root directory.
 
 
 Observations:
@@ -99,27 +98,29 @@ Observations:
     After running 5 times the summary is:
 
     ======================================= FINAL RESULTS==================================
-    Basic latency mean: 106.01629999582656
-    Basic latency std: 19.929799831738855
+    Basic latency mean: 121.30851679248735
+    Basic latency std: 29.65596076612746
     Basic RPC count: 20
-    Basic total data transferred: 64100
-
-    Optimized latency mean: 94.88494139513932
-    Optimized latency std: 1.6018154394267519
+    Basic total data transferred: 738260
+    Optimized latency mean: 97.48969996580854
+    Optimized latency std: 2.827430417703615
     Optimized RPC count: 15
-    Optimized total data transferred: 2815
+    Optimized total data transferred: 87625
+    ======================================= FINAL RESULTS==================================
 
 
                                 Basic      Optimized
-    Latency mean                106 ms     94.8 ms
-    Latency std deviation       19.29      1.6
+    Latency mean                121.3 ms   97.5 ms
+    Latency std deviation       29         2.82
     RPC                         20         15
-    Data transferred            64100      2815
+    Data transferred            738260     87625
 
 
-    As you can see, the latency of each component has gone down. The total latency (mean of 5 runs) decreased from 106 ms to 94 ms. An unnecessary call to the parser has been eliminated, reducing the RPC calls over 5 runs from 20 to 15. This reduces unnecessary computation.
+    As you can see, the latency of each component has gone down. The total latency (mean of 5 runs) decreased from 121 ms to 97 ms. An unnecessary call to the parser has been eliminated, reducing the RPC calls over 5 runs from 20 to 15. This reduces unnecessary computation.
 
-    The payload size has also been reduced. For example, the parser in the basic flow outputs 3103 bytes and the lint tool takes 3103 bytes as input. On the other hand, the output of the parser in the optimized version is just 87 bytes and the input to the lint is 87 bytes.
+    The individual payload size has also been reduced. For example in one individual run, the parser in the basic flow outputs 3103 bytes and the lint tool takes 3103 bytes as input. On the other hand, the output of the parser in the optimized version is just 87 bytes and the input to the lint is 87 bytes. cross 5 runs, the totalm data transferred reduces from 738260 to 87625 bytes in the optimized. 
+
+
 
 
 Hardware configuration:

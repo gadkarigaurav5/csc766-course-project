@@ -3,20 +3,23 @@ import json
 import sys
 import uuid
 import requests
-sys.path.append("..")
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+LOG_PATH = os.path.join(BASE_DIR,"profiler_logs","optimized_logs.jsonl")
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import profiler_utils as pu
 
 PARSER_URL = "http://127.0.0.1:8000/parse"
 LINT_URL=  "http://127.0.0.1:8001/lint"
 DOC_URL= "http://127.0.0.1:8002/doc"
-LOG_PATH ="../profiler_logs/optimized_logs.jsonl"
+
 
 
 
 
 
 def read_source(path):
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path) as f:
         return f.read()
 
 
@@ -105,7 +108,7 @@ def main():
         payload_in_bytes=pu.guess_bytes(doc_payload),
         payload_out_bytes=pu.guess_bytes(doc_output),
         inputs_meta={"functions":make_meta(doc_payload["functions"], "json"),"classes":make_meta(doc_payload["classes"], "json")},
-        outputs_meta={"documentation":make_meta(doc_output.get("documentation", []), "json")}
+        outputs_meta={"documentation":make_meta(doc_output.get("documentation",[]), "json")}
     )
     pu.append_jsonl(LOG_PATH, doc_record)
 
@@ -116,7 +119,7 @@ def main():
     
     
     
-    print("=========== Summary ========")
+    print("===========Optimized Summary ========")
     print("TRACE_ID:", trace_id)
     print("Parser latency:",t1 - t0, "ms")
     print("Lint latency:", t3 - t2,"ms")

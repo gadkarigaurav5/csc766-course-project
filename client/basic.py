@@ -3,18 +3,21 @@ import json
 import sys
 import uuid
 import requests
+import os
 
-sys.path.append("..")
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+LOG_PATH = os.path.join(BASE_DIR,"profiler_logs","basic_logs.jsonl")
 import profiler_utils as pu
 
 PARSER_URL ="http://127.0.0.1:8000/parse"
 LINT_URL ="http://127.0.0.1:8001/lint"
 DOC_URL = "http://127.0.0.1:8002/doc"
-LOG_PATH = "../profiler_logs/basic_logs.jsonl"
+
 
 
 def read_source(path):
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path) as f:
         return f.read()
 
 
@@ -126,7 +129,7 @@ def main():
     total_latency = t7 - t0
     
     
-    print("========== Summary =======")
+    print("========== Basic Summary =======")
     print("TRACE_ID:", trace_id)
     print("Parser 1 latency:", t1-t0, "ms")
     print("Lint latency:", t3-t2, "ms")
