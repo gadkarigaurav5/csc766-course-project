@@ -1,89 +1,128 @@
-I have implemented the code analysis pipeline for pythin codes using HTTP using FastApi(referred the caption_survey)
+Overview:
+    I have implemented a code analysis pipeline for Python code using HTTP with FastAPI.
 
-The code analysis has 3 components
-Parser:
-    extracts function names and arguments and class names. I am also adding random data here to demonstarte the increase in data transfer size that can happen if we have lot of useless data. this extra data is never used in the pipeline
+    The code analysis has 3 components:
 
-Lint:
-    Tool that checks the structure. Specifically, I am cheking if the Classname starts with upper case. Functions should start with lower case and should habe a max of 4 arguments.
+    Parser:
+        Extracts function names, arguments, and class names. My parser also returns the AST and tokens to the caller. It also returns a set of tokens. The tokens are classified as variable, keyword, value, operator, or Other. The AST and token data are never used in the pipeline.
 
-Doc:
-    Geberates ouput in plain english. tells the class name, function name and function arguments.
+    Lint:
+        Tool that checks the structure. Specifically, I am checking if the class name starts with an uppercase letter. Functions should start with lowercase and should have a maximum of 4 arguments.
+
+    Doc:
+        Generates output in plain English. It reports the class name, function name, and function arguments.
 
 
-Directory Structure
-client : the client codes for basi and optimized version
+    Directory Structure:
 
-profiler_logs: profilers logs that will be generated
+    client : the client codes for basic and optimized version
 
-services: code for each of the tool
+    profiler_logs: profiler logs that will be generated
 
-tests : the sample python code that will be fed to the pipelin
+    services: code for each of the tools
 
-profiler_utils.py : I have used the file provided to generate logs.
+    tests : the sample Python code that will be fed to the pipeline
+
+    profiler_utils.py : I have used the file provided to generate logs
+
+    perf_measure.py : This runs the pipeline 5 times
+
+
+Workflow:
 
 InEfficient Basic pipeline:
     inefficiencies:
         adds extra data 
         a useless call
     pipeline:
-        parse->int->parse again->doc
+        parse -> lint -> parse again -> doc
 
-Efficient Opitmized pipeline:
+Efficient Optimized pipeline:
     Optimizations:
         removes extra data
         removes redundant call
     pipeline:
-        parse->lint->doc
+        parse -> lint -> doc
+
 
 To Run:
     
-    Open 3 terminals and paste the below command in each
+    Open 3 terminals and paste the below command in each.
     cd to services folder in all the 3 terminals.
+
     uvicorn parse_service:app --port 8000
     uvicorn lint_service:app --port 8001
     uvicorn doc_service:app --port 8002 
 
-    open a new terminal
+   
+    Open a new terminal
     cd client
-    run basic client
 
+    sample.py is a simple test case which is a Python file to be parsed
 
+    *********run basic client***********
     python basic.py --source ../tests/sample.py
-    sample.py is a test simple test case
+   
 
-    run optimized
+    *********run optimized client***********
     python optimized.py --source ../tests/sample.py
 
     cd ../profiler_logs
     basic logs : basic_logs
     optimized logs: optimized_logs
 
+    If you want to run the pipelines and collect data over multiple runs, run perf_measure.py 
 
-    Basic Summary :
-    TRACE_ID: tr_cfcd08fd84c0
-    Parser 1 latency: 76 ms
-    Lint latency: 55 ms
-    Parser 2 latency: 2 ms
-    Doc latency: 27 ms
-    Total latency: 160 ms
+
+Observations:
+
+    (venv) gauravgadkari@Mac client % python basic.py --source ../tests/sample.py
+    ========== Summary =======
+    TRACE_ID: tr_4bf514c1dfdb
+    Parser 1 latency: 57 ms
+    Lint latency: 29 ms
+    Parser 2 latency: 1 ms
+    Doc latency: 69 ms
+    Total latency: 157 ms
     RPC calls: 4
 
-    Optimized Sumamry:
-    TRACE_ID: tr_9ced684f97be
-    Parser latency: 23 ms
-    Lint latency: 11 ms
-    Doc latency: 7 ms
-    Total latency: 41 ms
+    (venv) gauravgadkari@Mac client % python optimized.py --source ../tests/sample.py
+    =========== Summary ========
+    TRACE_ID: tr_b97e27ae9341
+    Parser latency: 6 ms    
+    Lint latency: 3 ms
+    Doc latency: 2 ms
+    Total latency: 11 ms
     RPC calls: 3
 
-    As you can see lateny of each component has gone down. total latency is reduced. An unnecessary call to parser has been eliminated bringing down the rpc calls to 3.
-    This reduces unnecessary computation.
 
-    The payload size has also been reduced:
-    e.g. in doc you can see input payload to be payload_in_bytes":3103 in basic  vs payload_in_bytes":87. This demonstrates the reduction caused by transfer of unnecessary data between calls.
+    After running 5 times the summary is:
 
-    Hardware configuration:
+    ======================================= FINAL RESULTS==================================
+    Basic latency mean: 106.01629999582656
+    Basic latency std: 19.929799831738855
+    Basic RPC count: 20
+    Basic total data transferred: 64100
+
+    Optimized latency mean: 94.88494139513932
+    Optimized latency std: 1.6018154394267519
+    Optimized RPC count: 15
+    Optimized total data transferred: 2815
+
+
+                                Basic      Optimized
+    Latency mean                106 ms     94.8 ms
+    Latency std deviation       19.29      1.6
+    RPC                         20         15
+    Data transferred            64100      2815
+
+
+    As you can see, the latency of each component has gone down. The total latency (mean of 5 runs) decreased from 106 ms to 94 ms. An unnecessary call to the parser has been eliminated, reducing the RPC calls over 5 runs from 20 to 15. This reduces unnecessary computation.
+
+    The payload size has also been reduced. For example, the parser in the basic flow outputs 3103 bytes and the lint tool takes 3103 bytes as input. On the other hand, the output of the parser in the optimized version is just 87 bytes and the input to the lint is 87 bytes.
+
+
+Hardware configuration:
     Apple M2
-    cpu core_count: 8
-    RAM: 8Gb
+    CPU core count: 8
+    RAM: 8 GB

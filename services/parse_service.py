@@ -1,4 +1,7 @@
 import ast
+import keyword
+import tokenize
+import io
 import json
 from fastapi import FastAPI, Request, Body
 
@@ -41,13 +44,41 @@ def parse_code(data: dict = Body(...)):
     result["classes"] = classes
 
 
-# I am addinfg randomn data gere which will not be used anywhere in the pipeline
-#jsut for demonstration of increase in payload size resuling from useless data
+#I had used random data as unused data in the intial submission
+#according to the feedback I modified it so that now my parser 
+#passes ast and token
+#I have classified tokens into variable, keyword, value, operator, or some other
     if include_extras:
-        extra_data =""
-        for i in range(3000):
-            extra_data = extra_data + "X"
-        result["extra_data"] = extra_data
+        # extra_data =""
+        # for i in range(3000):
+        # extra_data = extra_data + "X"
+        result["ast"]= ast.dump(tree,indent=3)
+        tokens = []
+        reader = io.StringIO(src).readline
+# Note : I did not know about tokenize . hence i have used ChatGpt here since I have used 
+# flex tool for this before which I was not sure how to integrate here.
+# it would have been very difficult to write a tokenizer of my own due to time constraints.    
+        for tok in tokenize.generate_tokens(reader):
+            token_str = tok.string
+            token_info = {}
 
+            if token_str in keyword.kwlist:
+                token_info["type"] = "keyword"
+
+            elif token_str.isidentifier():
+                token_info["type"] = "variable"
+
+            elif token_str.isdigit() or token_str.startswith(("'", '"')):
+                token_info["type"] = "value"
+
+            elif token_str in ["+", "-", "*", "/", "%", "=", "==", "!=", "<", ">", "<=", ">=", "(", ")", ":", ","]:
+                token_info["type"] = "operator"
+
+            else:
+                token_info["type"] = "other"
+
+        token_info["string"] = token_str
+        tokens.append(token_info)
+        result["tokens"] = tokens
     
     return result
