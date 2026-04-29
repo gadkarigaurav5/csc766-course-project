@@ -30,19 +30,19 @@ Overview:
 
 Workflow:
 
-InEfficient Basic pipeline:
-    inefficiencies:
-        adds extra data 
-        a useless call
-    pipeline:
-        parse -> lint -> parse again -> doc
+    InEfficient Basic pipeline:
+        inefficiencies:
+            adds extra data 
+            a useless call
+        pipeline:
+            parse -> lint -> parse again -> doc
 
-Efficient Optimized pipeline:
-    Optimizations:
-        removes extra data
-        removes redundant call
-    pipeline:
-        parse -> lint -> doc
+    Efficient Optimized pipeline:
+        Optimizations:
+            removes extra data
+            removes redundant call
+        pipeline:
+            parse -> lint -> doc
 
 
 To Run:
